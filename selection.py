@@ -1,4 +1,5 @@
 import random
+
 from population_creator import Individual
 
 
