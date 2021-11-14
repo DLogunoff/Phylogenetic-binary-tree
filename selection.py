@@ -1,5 +1,5 @@
 import random
-
+from population_creator import Individual
 
 def select_tournament(population: list, p_len: int) -> list:
     """
@@ -36,3 +36,17 @@ def select_tournament(population: list, p_len: int) -> list:
                              key=lambda ind: ind.fitness.values)
                          )
     return offspring
+
+
+def clone(to_clone: Individual) -> Individual:
+    """
+
+    :param to_clone: особь, которую нужно склонировать
+    :return: новый экземпляр класса Individual
+
+    В каждом поколении должны быть новые экземпляры класса Individual во
+    избежании возможных проблем в последующих поколениях
+    """
+    ind = Individual(to_clone[:])
+    ind.fitness.values = to_clone.fitness.values
+    return ind
