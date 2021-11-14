@@ -121,10 +121,10 @@ def get_flat(gen: list) -> list:
         return list(np.reshape(gen, -1))
     for i, piece in enumerate(gen):
         if isinstance(piece, list):
-            temp: int = copy.copy(gen[i == 0])
             for node in piece:
                 result.append(node)
-            result.append(temp)
+        else:
+            result.append(piece)
     return result if result else gen
 
 
