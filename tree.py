@@ -1,19 +1,31 @@
-from fitness import fitness_count
-from population_creator import create_population
+import matplotlib.pyplot as plt
+
+from tools.main_algorithm import genetic_algorithm
 
 # Костанта задачи
 INDIVIDUAL_SIZE = 5  # Количетсво генов в хромосове особи
 
 # Константы генетического алгоритма
-POPULATION_SIZE = 200  # Количество особей в популяции
-P_CROSSOVER = 0.9  # Вероятность скрещивания
+POPULATION_SIZE = 100  # Количество особей в популяции
+P_CROSSOVER = 0.90  # Вероятность скрещивания
 P_MUTATION = 0.1  # Вероятность мутации
-MAX_GENERATIONS = 50  # Максимальное число поколений
+MAX_GENERATIONS = 100  # Максимальное число поколений
+EPS = 0.000001  # Точность определения функции приспособленности
 
 
-population: list = create_population(INDIVIDUAL_SIZE, POPULATION_SIZE)
+best_individual, min_values, mean_values = genetic_algorithm(
+        speciman_size=INDIVIDUAL_SIZE,
+        population_size=POPULATION_SIZE,
+        max_generations=MAX_GENERATIONS,
+        p_crossover=P_CROSSOVER,
+        p_mutation=P_MUTATION,
+        eps=EPS
+)
 
-fitness_values = list(map(fitness_count, population))
 
-for individual, fitness_value in zip(population, fitness_values):
-    individual.fitness.values = fitness_value
+plt.plot(min_values, color='red')
+plt.plot(mean_values, color='blue')
+plt.xlabel('Поколение')
+plt.ylabel('Мин/средняя приспособленность')
+plt.title('Зависимость минимальной и средней приспособленности от поколения')
+plt.show()
