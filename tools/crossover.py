@@ -1,4 +1,4 @@
-from population_creator import Individual, individual_create
+from tools.population_creator import Individual, individual_create
 
 
 def check_genes(gen1: list, gen2: list, child: list, heads: list,
