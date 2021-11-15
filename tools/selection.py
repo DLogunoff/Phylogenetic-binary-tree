@@ -1,6 +1,6 @@
 import random
 
-from population_creator import Individual
+from tools.population_creator import Individual
 
 
 def clone(to_clone: Individual) -> Individual:
