@@ -14,6 +14,42 @@ class Individual(list):
         self.fitness = Fitness()
 
 
+def extract_template(template: list, n: int) -> tuple:
+    """
+
+    :param template: шаблон дочерней особи
+    :param n: количество вершин бинарного дерева
+    :return: Возвращает извлеченную информацию из имеющихся генов
+
+    Функция используется для извлечения всех необходимых данных из
+    частично построенной хромосомы дочерней особи.
+
+    В эти данных входит:
+
+        1. first_place - список допустимых вершин для первой позиции в гене;
+
+        2. second_place - список допустимых вершин для второй позиции в гене;
+
+        3. complex_nodes - список комлексных вершин в хромосоме;
+
+        4. available_places - список свободных генов в хромосоме, т.е. таких
+        генов, которые не были унаследованы от родителей.
+    """
+    available_places: list = []
+    complex_nodes: list = []
+    first_place: m_arr = m_arr(arange(n))
+    second_place: m_arr = m_arr(arange(n))
+    for i, gen in enumerate(template):
+        if gen:
+            exclude, complex_node = get_exclude(gen[0], gen[1])
+            complex_nodes.append(complex_node)
+            first_place = masked_values(first_place, exclude)
+            second_place = masked_values(second_place, exclude)
+        else:
+            available_places.append(i)
+    return first_place, second_place, complex_nodes, available_places
+
+
 def get_exclude(node1: int, node2: int) -> tuple:
     """
     :param node1: первая вершина в гене
@@ -50,10 +86,10 @@ def get_order_of_nodes(node1: int, node2: int, complex_nodes: list) -> tuple:
     return node1, node2
 
 
-def individual_create(n: int) -> Individual:
-
+def individual_create(n: int, template: list = None) -> Individual:
     """
     :param n: Количество вершин бинарного дерева
+    :param template: шаблон дочерней особи
     :return: экземпляр класса Individual (особь)
 
     Хромосома имеет n - 1 генов, где n - число вершин бинарного дерева
@@ -96,13 +132,24 @@ def individual_create(n: int) -> Individual:
 
         5. Ген добавляется в хромосому.
 
+
+    Данная функция также используется для построения допустимых дочерних
+    особей. Для этого нужно в аргумент функции передать необязательный
+    параметр template.
     """
     genes: int = n - 1
-    chromosome: list = []
-    first_place: m_arr = m_arr(arange(n))
-    second_place: m_arr = m_arr(arange(n))
-    complex_nodes: list = []
-    for _ in range(genes):
+    if not template:
+        first_place: m_arr = m_arr(arange(n))
+        second_place: m_arr = m_arr(arange(n))
+        available_genes = range(genes)
+        chromosome: list = [None] * genes
+        complex_nodes: list = []
+    else:
+        (first_place, second_place,
+         complex_nodes, available_genes) = extract_template(template, n)
+        chromosome: list = template
+
+    for i in available_genes:
         node_1: int = random.choice(first_place.compressed(), size=1)[0]
         node_2: int = random.choice(second_place.compressed(), size=1)[0]
         while node_2 == node_1:
@@ -112,7 +159,7 @@ def individual_create(n: int) -> Individual:
         node_1, node_2 = get_order_of_nodes(node_1, node_2, complex_nodes)
         first_place = masked_values(first_place, exclude)
         second_place = masked_values(second_place, exclude)
-        chromosome.append((node_1, node_2))
+        chromosome[i] = (node_1, node_2)
     return Individual(chromosome)
 
 
