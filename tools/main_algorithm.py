@@ -2,7 +2,8 @@ import random
 
 from tools.crossover import crossover
 from tools.fitness import fitness_count
-from tools.population_creator import create_population, individual_create
+from tools.mutation import mutation
+from tools.population_creator import create_population
 from tools.selection import clone, select_tournament
 
 
@@ -26,7 +27,9 @@ def genetic_algorithm(speciman_size: int, population_size: int,
     Скрещивание - специально разработанный алгоритм для данной задачи.
     Подробнее описан в файле crossover.py
 
-    Мутация - особь, подверженная мутации, заново генерирует свою хромосому.
+    Мутация - случайно выбираются гены (до половины от общего числа),
+    остальные гены стираются и особь формируется на основе оставшихся
+    генов.
 
     """
     population: list = create_population(speciman_size, population_size)
@@ -35,22 +38,26 @@ def genetic_algorithm(speciman_size: int, population_size: int,
     min_fitness_values = []
     mean_fitness_values = []
     generation_counter = 0
+    elitism = False
     while (min(fitness_values) > eps
            and generation_counter < max_generations):
         generation_counter += 1
-
+        if generation_counter >= int((1/2)*max_generations):
+            elitism = True
         offspring = select_tournament(population, population_size)
-        offspring = list(map(clone, offspring))
-        for parent1, parent2 in zip(offspring[::2], offspring[1::2]):
+        offspring_copied = list(map(clone, offspring))
+        for parent1, parent2 in zip(
+                offspring_copied[::2], offspring_copied[1::2]):
             if random.random() < p_crossover:
-                crossover(parent1, parent2, center)
-        for i in range(population_size):
+                crossover(parent1, parent2, center, elitism)
+        for mutant in offspring_copied:
             if random.random() < p_mutation:
-                offspring[i] = individual_create(speciman_size)
-        fresh_fitness_values = list(map(fitness_count, offspring))
-        for individual, fitness_value in zip(offspring, fresh_fitness_values):
+                mutation(mutant)
+        fresh_fitness_values = list(map(fitness_count, offspring_copied))
+        for individual, fitness_value in zip(
+                offspring_copied, fresh_fitness_values):
             individual.fitness.values = fitness_value
-        population[:] = offspring
+        population[:] = offspring_copied
 
         fitness_values = [ind.fitness.values for ind in population]
         min_fitness = min(fitness_values)
