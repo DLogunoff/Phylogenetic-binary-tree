@@ -85,12 +85,14 @@ def generate_child_template(parent1: list, parent2: list, center: int) -> list:
     return child if heads else parent1
 
 
-def crossover(parent1: Individual, parent2: Individual, center: int, elitism) -> None:
+def crossover(parent1: Individual, parent2: Individual,
+              center: int, elitism: bool = False) -> None:
     """
 
     :param parent1: первый родитель
     :param parent2: второй родитель
     :param center: середина хромосомы (индекс)
+    :param elitism: элитизм
     :return: Возвращает две дочерние особи - экземпляры Individual
 
     Сначала генерируем допустимый шаблон дочерних особей, после, используем
