@@ -2,26 +2,17 @@ import copy
 from math import prod
 
 import numpy as np
-
-STANDARD = [[1, 0.905, 0.887, 0.817, 0.788],
-            [0,  1, 0.882, 0.799, 0.775],
-            [0, 0, 1, 0.805, 0.775],
-            [0, 0, 0, 1, 0.778],
-            [0, 0, 0, 0, 1]]
+import pandas as pd
 
 
-def symmetrify(matrix: list) -> list:
-    """
+data = pd.read_excel(
+    'data.xlsx',
+    sheet_name='1',
+    index_col=None,  # Без индексного столбца
+    header=None,  # Без строки заголовков
+)
 
-    :param matrix: эталонная таблица мер близости
-    :return: возвращает симметричную относительно главной диагонали таблицу
-    """
-    matrix = np.array(matrix)
-    symm = matrix + matrix.T - np.diag(matrix.diagonal())
-    return symm
-
-
-STANDARD = symmetrify(STANDARD)
+STANDARD = data.to_numpy()
 
 
 def check_if_simple(gen: list) -> bool:
