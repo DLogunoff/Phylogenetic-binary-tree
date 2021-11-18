@@ -3,6 +3,10 @@ from numpy.ma import masked_array as m_arr
 from numpy.ma import masked_values
 
 
+class ImpossibleToCompleteError(ValueError):
+    pass
+
+
 class Fitness:
     def __init__(self):
         self.values = [0]
@@ -12,42 +16,6 @@ class Individual(list):
     def __init__(self, *args):
         super().__init__(*args)
         self.fitness = Fitness()
-
-
-def extract_template(template: list, n: int) -> tuple:
-    """
-
-    :param template: шаблон дочерней особи
-    :param n: количество вершин бинарного дерева
-    :return: Возвращает извлеченную информацию из имеющихся генов
-
-    Функция используется для извлечения всех необходимых данных из
-    частично построенной хромосомы дочерней особи.
-
-    В эти данных входит:
-
-        1. first_place - список допустимых вершин для первой позиции в гене;
-
-        2. second_place - список допустимых вершин для второй позиции в гене;
-
-        3. complex_nodes - список комлексных вершин в хромосоме;
-
-        4. available_places - список свободных генов в хромосоме, т.е. таких
-        генов, которые не были унаследованы от родителей.
-    """
-    available_places: list = []
-    complex_nodes: list = []
-    first_place: m_arr = m_arr(arange(n))
-    second_place: m_arr = m_arr(arange(n))
-    for i, gen in enumerate(template):
-        if gen:
-            exclude, complex_node = get_exclude(gen[0], gen[1])
-            complex_nodes.append(complex_node)
-            first_place = masked_values(first_place, exclude)
-            second_place = masked_values(second_place, exclude)
-        else:
-            available_places.append(i)
-    return first_place, second_place, complex_nodes, available_places
 
 
 def get_exclude(node1: int, node2: int) -> tuple:
@@ -86,6 +54,31 @@ def get_order_of_nodes(node1: int, node2: int, complex_nodes: list) -> tuple:
     return node1, node2
 
 
+def is_chromosome_valid(chromosome: list) -> bool:
+    """
+
+    :param chromosome: хромосома (или её шаблон)
+    :return: True/False для верной/нарушенной топологии хромосомы
+    """
+    for i, gen in enumerate(chromosome):
+        for j in chromosome[:i:-1]:
+            if gen and j and gen[1] in j:
+                return False
+    return True
+
+
+def get_nodes(first_place: m_arr, second_place: m_arr) -> tuple:
+    """
+
+    :param first_place: массив, который содержит все доступные значения для первой позиции в гене
+    :param second_place: массив, который содержит все доступные значения для второй позиции в гене
+    :return: случайно сгенерированный ген
+    """
+    node_1: int = random.choice(first_place.compressed(), size=1)[0]
+    node_2: int = random.choice(second_place.compressed(), size=1)[0]
+    return node_1, node_2
+
+
 def individual_create(n: int, template: list = None) -> Individual:
     """
     :param n: Количество вершин бинарного дерева
@@ -116,19 +109,13 @@ def individual_create(n: int, template: list = None) -> Individual:
     имя по минимальному элементу ветвей.
 
     В цикле происходит формирование генов следующим образом:
-        1. На первую позицию в гене случайным образом из массива first_place
-        выбирается вершина;
+        1. На первую позицию в гене случайным образом из массива
+         first_place выбирается вершина (node_1);
 
-        2. На первую позицию в гене случайным образом из массива second_place
-        выбирается вершина;
+        2. На вторую позицию в гене случайным образом из массива
+        second_place выбирается вершина (node_2);
 
-        3. Если в гене выбраны 2 одинаковые вершины, то вторая вершина
-        продолжает случайно выбираться из массива second_place до того момента,
-        пока вершины не станут разными;
-
-        4. Определяется имя созданной вершины путём исключения не минимальной
-        вершины. То есть определяется максимумальная вершина из двух и она
-        исключается из списков доступных вершин;
+        3. Если node_1 <= node_2, то пункты 1 и 2 повторяются снова;
 
         5. Ген добавляется в хромосому.
 
@@ -137,30 +124,44 @@ def individual_create(n: int, template: list = None) -> Individual:
     особей. Для этого нужно в аргумент функции передать необязательный
     параметр template.
     """
-    genes: int = n - 1
-    if not template:
-        first_place: m_arr = m_arr(arange(n))
-        second_place: m_arr = m_arr(arange(n))
-        available_genes = range(genes)
-        chromosome: list = [None] * genes
-        complex_nodes: list = []
+    complex_nodes: list = []
+    first_place: m_arr = m_arr(arange(n))
+    second_place: m_arr = m_arr(arange(n))
+    check = False
+    cycle = 0
+    if template:
+        check = True
+        for i, gen in enumerate(template):
+            if gen:
+                second_place = masked_values(second_place, gen[1])
     else:
-        (first_place, second_place,
-         complex_nodes, available_genes) = extract_template(template, n)
-        chromosome: list = template
-
-    for i in available_genes:
-        node_1: int = random.choice(first_place.compressed(), size=1)[0]
-        node_2: int = random.choice(second_place.compressed(), size=1)[0]
-        while node_2 == node_1:
-            node_2 = random.choice(second_place.compressed(), size=1)[0]
-        exclude, complex_node = get_exclude(node_1, node_2)
-        complex_nodes.append(complex_node)
-        node_1, node_2 = get_order_of_nodes(node_1, node_2, complex_nodes)
-        first_place = masked_values(first_place, exclude)
-        second_place = masked_values(second_place, exclude)
-        chromosome[i] = (node_1, node_2)
-    return Individual(chromosome)
+        template = [None] * (n - 1)
+    for i, gen in enumerate(template):
+        if gen is None:
+            correct = False
+            while not correct:
+                cycle += 1
+                node_1, node_2 = get_nodes(first_place, second_place)
+                while node_1 >= node_2:
+                    node_1, node_2 = get_nodes(first_place, second_place)
+                temp: list = template
+                temp[i] = (node_1, node_2)
+                correct = is_chromosome_valid(template)
+                if cycle >= 100:
+                    break
+            if cycle >= 100:
+                break
+            complex_nodes.append(node_1)
+            first_place = masked_values(first_place, node_2)
+            second_place = masked_values(second_place, node_2)
+        else:
+            complex_nodes.append(gen[0])
+            first_place = masked_values(first_place, gen[1])
+    if cycle >= 100:
+        raise ImpossibleToCompleteError
+    if check:
+        return template
+    return Individual(template)
 
 
 def create_population(individual_size: int, population_size: int) -> list:
