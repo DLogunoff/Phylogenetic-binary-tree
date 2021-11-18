@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 
+from tools.draw import draw_tree
 from tools.main_algorithm import genetic_algorithm
 
 # Костанта задачи
@@ -27,3 +28,5 @@ plt.ylabel('Мин/средняя приспособленность')
 plt.title(
     'Зависимость минимальной и средней приспособленности от поколения')
 plt.show()
+
+draw_tree(best_individual)
