@@ -1,4 +1,5 @@
-from tools.population_creator import Individual, individual_create
+from tools.population_creator import Individual, individual_create, ImpossibleToCompleteError
+from tools.fitness import fitness_count
 
 
 def check_genes(gen1: list, gen2: list, child: list, heads: list,
@@ -24,6 +25,8 @@ def check_genes(gen1: list, gen2: list, child: list, heads: list,
             or gen1[1] == gen2[1]
             or gen1[1] in heads
             or gen2[1] in heads
+            or gen1[0] in backs
+            or gen2[0] in backs
             or gen1[1] in backs
             or gen2[1] in backs
             or gen2 in child
@@ -81,7 +84,7 @@ def generate_child_template(parent1: list, parent2: list, center: int) -> list:
     return child if heads else parent1
 
 
-def crossover(parent1: Individual, parent2: Individual, center: int) -> tuple:
+def crossover(parent1: Individual, parent2: Individual, center: int, elitism) -> None:
     """
 
     :param parent1: первый родитель
@@ -97,7 +100,19 @@ def crossover(parent1: Individual, parent2: Individual, center: int) -> tuple:
     n: int = len(parent1) + 1
     child_1_template: list = generate_child_template(parent1, parent2, center)
     child_2_template: list = generate_child_template(parent2, parent1, center)
-    child_1: Individual = individual_create(n, template=child_1_template)
-    child_2: Individual = individual_create(n, template=child_2_template)
-
-    return child_1, child_2
+    try:
+        child_1 = individual_create(n, template=child_1_template)
+    except ImpossibleToCompleteError:
+        child_1 = parent1
+    try:
+        child_2 = individual_create(n, template=child_2_template)
+    except ImpossibleToCompleteError:
+        child_2 = parent2
+    if elitism:
+        if parent1.fitness.values > fitness_count(child_1):
+            parent1[:] = child_1[:]
+        if parent2.fitness.values > fitness_count(child_2):
+            parent2[:] = child_2[:]
+    else:
+        parent1[:] = child_1[:]
+        parent2[:] = child_2[:]
