@@ -9,7 +9,7 @@ from tools.selection import clone, select_tournament
 
 def genetic_algorithm(speciman_size: int, population_size: int,
                       max_generations: int, p_crossover: float,
-                      p_mutation: float, eps: float) -> tuple:
+                      p_mutation: float) -> tuple:
     """
 
     :param speciman_size: количество вершин
@@ -17,7 +17,6 @@ def genetic_algorithm(speciman_size: int, population_size: int,
     :param max_generations: максимальное количество поколений
     :param p_crossover: вероятность скрещивания
     :param p_mutation: вероятность мутации
-    :param eps: требуемая точность
     :return: Возвращает лучшую особь и статистику
 
     Стандартный генетический алгоритм: отбор - скрещивание - мутация.
@@ -33,17 +32,19 @@ def genetic_algorithm(speciman_size: int, population_size: int,
 
     """
     population: list = create_population(speciman_size, population_size)
-    center = speciman_size // 2
     fitness_values: list = list(map(fitness_count, population))
+    for individual, fitness_value in zip(population, fitness_values):
+        individual.fitness.values = fitness_value
+    center = speciman_size // 2
     min_fitness_values = []
     mean_fitness_values = []
     generation_counter = 0
     elitism = False
-    while (min(fitness_values) > eps
-           and generation_counter < max_generations):
+    while generation_counter < max_generations:
         generation_counter += 1
         if generation_counter >= int((1/2)*max_generations):
             elitism = True
+
         offspring = select_tournament(population, population_size)
         offspring_copied = list(map(clone, offspring))
         for parent1, parent2 in zip(
