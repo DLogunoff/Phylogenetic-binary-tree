@@ -1,5 +1,6 @@
-from tools.population_creator import Individual, individual_create, ImpossibleToCompleteError
 from tools.fitness import fitness_count
+from tools.population_creator import (ImpossibleToCompleteError, Individual,
+                                      individual_create)
 
 
 def check_genes(gen1: list, gen2: list, child: list, heads: list,
