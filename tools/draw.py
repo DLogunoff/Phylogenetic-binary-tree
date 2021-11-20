@@ -1,3 +1,6 @@
+from binarytree import Node
+
+
 def draw_tree(chromosome: list) -> None:
     """
 
@@ -5,12 +8,16 @@ def draw_tree(chromosome: list) -> None:
     :return: возвращает графическую структуру двоичного финологического
     дерева
     """
-    from binarytree import Node
-    root = Node(chromosome[-1][0])
+    root = Node(int(chromosome[-1][0]))
+    nodes = {}
     for gen in chromosome[::-1]:
-        for i in reversed(range(0, len(root.values))):
+        start = nodes[gen[0]] if gen[0] in nodes.keys() else 0
+        for i in reversed(range(start, len(root.values))):
             if root.values[i] == gen[0]:
-                root[i].left = Node(gen[0])
-                root[i].right = Node(gen[1])
+                root[i].left = Node(int(gen[0]))
+                root[i].right = Node(int(gen[1]))
+                nodes[int(gen[0])] = i
+                nodes[int(gen[1])] = i
                 break
+
     print(root)
