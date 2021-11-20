@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 
 from tools.draw import draw_tree
+from tools.fitness import STANDARD
 from tools.main_algorithm import genetic_algorithm
 
 # Костанта задачи
-INDIVIDUAL_SIZE = 25  # Количетсво генов в хромосове особи
+INDIVIDUAL_SIZE = len(STANDARD)  # Количетсво генов в хромосове особи
 
 # Константы генетического алгоритма
 POPULATION_SIZE = 1000  # Количество особей в популяции
