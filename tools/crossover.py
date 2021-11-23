@@ -1,6 +1,7 @@
-from tools.fitness import fitness_count
+import random
+
 from tools.population_creator import (ImpossibleToCompleteError, Individual,
-                                      individual_create)
+                                      create_individual)
 
 
 def check_genes(gen1: list, gen2: list, child: list, heads: list,
@@ -68,10 +69,13 @@ def generate_child_template(parent1: list, parent2: list, center: int) -> list:
     child = [None] * len(parent1)
     heads = []
     backs = []
-    for i, gen_in_parent_1 in enumerate(parent1[:center]):
-        for j, gen_in_parent_2 in reversed(
-                list(enumerate(parent2[center:], center))
-        ):
+    first = list(range(center))
+    second = list(range(center, len(parent1)))
+    random.shuffle(first), random.shuffle(second)
+    for i in first:
+        gen_in_parent_1 = parent1[i]
+        for j in second:
+            gen_in_parent_2 = parent2[j]
             if check_genes(
                     gen_in_parent_1, gen_in_parent_2, child, heads, backs):
                 continue
@@ -86,17 +90,16 @@ def generate_child_template(parent1: list, parent2: list, center: int) -> list:
 
 
 def crossover(parent1: Individual, parent2: Individual,
-              center: int, elitism: bool = False) -> None:
+              center: int) -> tuple:
     """
 
     :param parent1: первый родитель
     :param parent2: второй родитель
     :param center: середина хромосомы (индекс)
-    :param elitism: элитизм
     :return: Возвращает две дочерние особи - экземпляры Individual
 
     Сначала генерируем допустимый шаблон дочерних особей, после, используем
-    population_creator.individual_create, передавая в эту функцию шаблон
+    population_creator.create_individual, передавая в эту функцию шаблон
     дочерней особи. В итоге получается особь, сгенерированная по тем же
     правилам, что и особи из изначальной популяци.
     """
@@ -104,18 +107,11 @@ def crossover(parent1: Individual, parent2: Individual,
     child_1_template: list = generate_child_template(parent1, parent2, center)
     child_2_template: list = generate_child_template(parent2, parent1, center)
     try:
-        child_1 = individual_create(n, template=child_1_template)
+        child_1 = create_individual(n, template=child_1_template)
     except ImpossibleToCompleteError:
         child_1 = parent1
     try:
-        child_2 = individual_create(n, template=child_2_template)
+        child_2 = create_individual(n, template=child_2_template)
     except ImpossibleToCompleteError:
         child_2 = parent2
-    if elitism:
-        if parent1.fitness.values > fitness_count(child_1):
-            parent1[:] = child_1[:]
-        if parent2.fitness.values > fitness_count(child_2):
-            parent2[:] = child_2[:]
-    else:
-        parent1[:] = child_1[:]
-        parent2[:] = child_2[:]
+    return child_1, child_2
