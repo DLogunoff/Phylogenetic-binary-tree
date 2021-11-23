@@ -18,42 +18,6 @@ class Individual(list):
         self.fitness = Fitness()
 
 
-def get_exclude(node1: int, node2: int) -> tuple:
-    """
-    :param node1: первая вершина в гене
-    :param node2: вторая вершина в гене
-    :return Возвращает кортеж вершин. Первая вершина подлежит
-    исключению(наибольшая), а вторая (наименьшая) становится именем
-    комплексной вершины
-    """
-    return (node1, node2) if node1 > node2 else (node2, node1)
-
-
-def get_order_of_nodes(node1: int, node2: int, complex_nodes: list) -> tuple:
-    """
-
-    :param node1: первая вершина в гене
-    :param node2: вторая вершина в гене
-    :param complex_nodes: список комплексных вершин
-    :return: возвращает кортеж из двух вершин
-
-    Стоит помнить, что комплексная вершина получает имя по минимальной из
-    вершин, входящих в неё.
-    Выходной кортеж формируется по следующему правилу:
-
-        На первом месте всегда находится меньшая по номеру вершина.
-
-    Из этого также следует, что в каждой хромосоме последний ген будет
-    выглядеть (0, ... ).
-    """
-    if node2 in complex_nodes and node1 not in complex_nodes:
-        return node2, node1
-    elif node1 in complex_nodes and node2 in complex_nodes:
-        if node2 < node1:
-            return node2, node1
-    return node1, node2
-
-
 def is_chromosome_valid(chromosome: list) -> bool:
     """
 
@@ -79,7 +43,7 @@ def get_nodes(first_place: m_arr, second_place: m_arr) -> tuple:
     return node_1, node_2
 
 
-def individual_create(n: int, template: list = None) -> Individual:
+def create_individual(n: int, template: list = None) -> Individual:
     """
     :param n: Количество вершин бинарного дерева
     :param template: шаблон дочерней особи
@@ -127,10 +91,8 @@ def individual_create(n: int, template: list = None) -> Individual:
     complex_nodes: list = []
     first_place: m_arr = m_arr(arange(n))
     second_place: m_arr = m_arr(arange(n))
-    check = False
     cycle = 0
     if template:
-        check = True
         for i, gen in enumerate(template):
             if gen:
                 second_place = masked_values(second_place, gen[1])
@@ -147,20 +109,14 @@ def individual_create(n: int, template: list = None) -> Individual:
                 temp: list = template
                 temp[i] = (node_1, node_2)
                 correct = is_chromosome_valid(template)
-                if cycle >= 100:
-                    break
-            if cycle >= 100:
-                break
+                if cycle == 100:
+                    raise ImpossibleToCompleteError
             complex_nodes.append(node_1)
             first_place = masked_values(first_place, node_2)
             second_place = masked_values(second_place, node_2)
         else:
             complex_nodes.append(gen[0])
             first_place = masked_values(first_place, gen[1])
-    if cycle >= 100:
-        raise ImpossibleToCompleteError
-    if check:
-        return template
     return Individual(template)
 
 
@@ -171,6 +127,4 @@ def create_population(individual_size: int, population_size: int) -> list:
     :param population_size: размер популяции
     :return: Возвращает сформированную популяцию (в списке)
     """
-    return list(
-        individual_create(individual_size) for _ in range(population_size)
-    )
+    return [create_individual(individual_size) for _ in range(population_size)]
