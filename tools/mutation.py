@@ -24,9 +24,14 @@ def mutation(individual: Individual) -> Individual:
     length: int = len(individual)
     template: list = [None] * length
     no_change_amount = range(randint(int(length * 0.6), length - 1))
-    no_change_index = sorted(
-        [randint(0, length - 1) for _ in no_change_amount]
-    )
+    no_change_index = []
+    for _ in no_change_amount:
+        while True:
+            random_index = randint(0, length - 1)
+            if random_index not in no_change_index:
+                no_change_index.append(random_index)
+                break
+    no_change_index.sort()
     for i in no_change_index:
         template[i] = individual[i]
     try:
