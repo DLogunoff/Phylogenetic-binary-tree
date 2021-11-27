@@ -1,40 +1,8 @@
 import random
+import copy
 
 from tools.population_creator import (ImpossibleToCompleteError, Individual,
-                                      create_individual)
-
-
-def check_genes(gen1: list, gen2: list, child: list, heads: list,
-                backs: list) -> bool:
-    """
-
-    :param gen1: ген первого родителя
-    :param gen2: ген второго родителя
-    :param child: хромосома дочерней особи
-    :param heads: список наименований верший комплесных узлов
-    :param backs: список вершин, которые не могут находиться на 1 месте в гене
-    :return: True/False
-
-    Функция служит для определения пригодности двух генов для скрещивания.
-
-    Гены не должны вызывать конфликта топологии. В каждом гене всегда на первом
-    место стоит наименьшая вершина и результирующая комплексная вершина
-    получает имя по наименьшей вершине, а та вершина, что была на втором месте,
-    выбывает из списка доступных.
-    """
-    if (gen1[1] == gen2[0]
-            or gen1 == gen2
-            or gen1[1] == gen2[1]
-            or gen1[1] in heads
-            or gen2[1] in heads
-            or gen1[0] in backs
-            or gen2[0] in backs
-            or gen1[1] in backs
-            or gen2[1] in backs
-            or gen2 in child
-            or gen1 in child):
-        return True
-    return False
+                                      create_individual, is_chromosome_valid)
 
 
 def generate_child_template(parent1: list, parent2: list, center: int) -> list:
@@ -67,26 +35,31 @@ def generate_child_template(parent1: list, parent2: list, center: int) -> list:
     экземпляр класса Individual.
     """
     child = [None] * len(parent1)
-    heads = []
-    backs = []
     first = list(range(center))
     second = list(range(center, len(parent1)))
     random.shuffle(first), random.shuffle(second)
-    for i in first:
+    for i, j in zip(first, second):
         gen_in_parent_1 = parent1[i]
-        for j in second:
-            gen_in_parent_2 = parent2[j]
-            if check_genes(
-                    gen_in_parent_1, gen_in_parent_2, child, heads, backs):
-                continue
-            heads.append(gen_in_parent_1[0])
-            heads.append(gen_in_parent_2[0])
-            backs.append(gen_in_parent_1[1])
-            backs.append(gen_in_parent_2[1])
-            child[i] = gen_in_parent_1
-            child[j] = gen_in_parent_2
-
-    return child if heads else parent1
+        gen_in_parent_2 = parent2[j]
+        for k in range(3):
+            temp = copy.copy(child)
+            if k == 0:
+                temp[i] = gen_in_parent_1
+                temp[j] = gen_in_parent_2
+                if is_chromosome_valid(temp):
+                    child[:] = temp[:]
+                    break
+            elif k == 1:
+                temp[i] = gen_in_parent_1
+                if is_chromosome_valid(temp):
+                    child[:] = temp[:]
+                    break
+            else:
+                temp[j] = gen_in_parent_2
+                if is_chromosome_valid(temp):
+                    child[:] = temp[:]
+                    break
+    return child
 
 
 def crossover(parent1: Individual, parent2: Individual,
