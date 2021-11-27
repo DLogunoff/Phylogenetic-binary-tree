@@ -1,3 +1,5 @@
+import random
+
 from tools.crossover import crossover
 from tools.fitness import fitness_count
 from tools.mutation import mutation
@@ -12,12 +14,9 @@ def genetic_algorithm(speciman_size: int, population_size: int,
     :param speciman_size: количество вершин
     :param population_size: размер популяции
     :param max_generations: максимальное количество поколений
-    :param p_crossover: вероятность скрещивания
-    :param p_mutation: вероятность мутации
     :return: Возвращает лучшую особь и статистику
 
     Стандартный генетический алгоритм: отбор - скрещивание - мутация.
-
 
     Скрещивание - специально разработанный алгоритм для данной задачи.
     Подробнее описан в файле crossover.py
@@ -38,6 +37,7 @@ def genetic_algorithm(speciman_size: int, population_size: int,
     while generation_counter < max_generations:
         generation_counter += 1
 
+        random.shuffle(population)
         offspring_copied = list(map(clone, population))
         for parent1, parent2 in zip(
                 offspring_copied[::2], offspring_copied[1::2]):
