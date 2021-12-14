@@ -48,9 +48,9 @@ def select_tournament(population: list, p_len: int) -> list:
     for i in range(p_len):
         i1 = i2 = i3 = 0
         while i1 == i2 or i1 == i3 or i2 == i3:
-            i1, i2, i3 = (random.randint(0, p_len-1),
-                          random.randint(0, p_len-1),
-                          random.randint(0, p_len-1)
+            i1, i2, i3 = (random.randint(0, p_len - 1),
+                          random.randint(0, p_len - 1),
+                          random.randint(0, p_len - 1)
                           )
         offspring.append(
             min(
