@@ -16,7 +16,7 @@ def genetic_algorithm(speciman_size: int, population_size: int,
     :param max_generations: максимальное количество поколений
     :return: Возвращает лучшую особь и статистику
 
-    Стандартный генетический алгоритм: отбор - скрещивание - мутация.
+    Генетический алгоритм: скрещивание - мутация - отбор.
 
     Скрещивание - специально разработанный алгоритм для данной задачи.
     Подробнее описан в файле crossover.py
@@ -42,10 +42,14 @@ def genetic_algorithm(speciman_size: int, population_size: int,
         for parent1, parent2 in zip(
                 offspring_copied[::2], offspring_copied[1::2]):
             result = crossover(parent1, parent2, center)
-            offspring_copied.append(result[0])
-            offspring_copied.append(result[1])
+            if result[0] is not None:
+                offspring_copied.append(result[0])
+            if result[1] is not None:
+                offspring_copied.append(result[1])
         for i in range(len(offspring_copied)):
-            offspring_copied.append(mutation(offspring_copied[i]))
+            mutant = mutation(offspring_copied[i])
+            if mutant is not None:
+                offspring_copied.append(mutant)
         fresh_fitness_values = list(map(fitness_count, offspring_copied))
         for individual, fitness_value in zip(
                 offspring_copied, fresh_fitness_values):
@@ -54,11 +58,11 @@ def genetic_algorithm(speciman_size: int, population_size: int,
             offspring_copied,
             key=lambda ind: ind.fitness.values
         )[:population_size]
-        population[:] = best_offspring[:]
+        population = best_offspring[:]
 
         fitness_values = [ind.fitness.values for ind in population]
         min_fitness = min(fitness_values)
-        mean_fitness = sum(fitness_values) / population_size
+        mean_fitness = sum(fitness_values) / len(population)
         min_fitness_values.append(min_fitness)
         mean_fitness_values.append(mean_fitness)
         best_index = fitness_values.index(min(fitness_values))
