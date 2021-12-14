@@ -52,7 +52,7 @@ def create_individual(n: int, template: list = None) -> Individual:
     Хромосома имеет n - 1 генов, где n - число вершин бинарного дерева
     (или же для данной задачи это количество особей).
 
-    Каждый ген имеет вид двуместного массива вершин, причём вершины
+    Каждый ген имеет вид двухместного массива вершин, причём вершины
     располагаются в генах по следующим правилам:
         1. Занять первую позицию в гене может только та вершина, которая
         никогда до этого не была на второй позиции;
@@ -88,7 +88,6 @@ def create_individual(n: int, template: list = None) -> Individual:
     особей. Для этого нужно в аргумент функции передать необязательный
     параметр template.
     """
-    complex_nodes: list = []
     first_place: m_arr = m_arr(arange(n))
     second_place: m_arr = m_arr(arange(n))
     cycle = 0
@@ -108,14 +107,12 @@ def create_individual(n: int, template: list = None) -> Individual:
                     node_1, node_2 = get_nodes(first_place, second_place)
                 temp: list = template
                 temp[i] = (node_1, node_2)
-                correct = is_chromosome_valid(template)
+                correct = is_chromosome_valid(temp)
                 if cycle == 100:
                     raise ImpossibleToCompleteError
-            complex_nodes.append(node_1)
             first_place = masked_values(first_place, node_2)
             second_place = masked_values(second_place, node_2)
         else:
-            complex_nodes.append(gen[0])
             first_place = masked_values(first_place, gen[1])
     return Individual(template)
 
