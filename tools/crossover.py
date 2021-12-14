@@ -1,5 +1,5 @@
-import random
 import copy
+import random
 
 from tools.population_creator import (ImpossibleToCompleteError, Individual,
                                       create_individual, is_chromosome_valid)
@@ -78,9 +78,9 @@ def crossover(parent1: Individual, parent2: Individual,
     try:
         child_1 = create_individual(n, template=child_1_template)
     except ImpossibleToCompleteError:
-        child_1 = parent1
+        child_1 = None
     try:
         child_2 = create_individual(n, template=child_2_template)
     except ImpossibleToCompleteError:
-        child_2 = parent2
+        child_2 = None
     return child_1, child_2
