@@ -4,7 +4,7 @@ from tools.population_creator import (ImpossibleToCompleteError, Individual,
                                       create_individual)
 
 
-def mutation(individual: Individual) -> Individual:
+def mutation(individual: Individual):
     """
 
     :param individual: особь
@@ -23,7 +23,7 @@ def mutation(individual: Individual) -> Individual:
     """
     length: int = len(individual)
     template: list = [None] * length
-    no_change_amount = range(randint(int(length * 0.6), length - 1))
+    no_change_amount = range(randint(int(length * 0.5), int(length * 0.9)))
     no_change_index = []
     for _ in no_change_amount:
         while True:
@@ -37,5 +37,5 @@ def mutation(individual: Individual) -> Individual:
     try:
         mutant = create_individual(length + 1, template=template)
     except ImpossibleToCompleteError:
-        mutant = individual
+        mutant = None
     return mutant
