@@ -17,11 +17,11 @@ best_individual, min_values, mean_values = genetic_algorithm(
     max_generations=MAX_GENERATIONS,
 )
 
-draw_tree(best_individual)
-plt.plot(min_values, color='red')
-plt.plot(mean_values, color='blue')
-plt.xlabel('Поколение')
-plt.ylabel('Мин/средняя приспособленность')
-plt.title(
-    'Зависимость минимальной и средней приспособленности от поколения')
-plt.show()
+# draw_tree(best_individual)
+# plt.plot(min_values, color='red')
+# plt.plot(mean_values, color='blue')
+# plt.xlabel('Поколение')
+# plt.ylabel('Мин/средняя приспособленность')
+# plt.title(
+#     'Зависимость минимальной и средней приспособленности от поколения')
+# plt.show()
